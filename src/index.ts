@@ -1,6 +1,6 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const userService = require("./services/serviceUser"); // Importa o serviço de banco de dados
+import express from "express";
+import bodyParser from "body-parser";
+import { addUser, getAllUsers } from "./services/serviceUser";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,12 +10,12 @@ app.use(bodyParser.json());
 
 // 🚀 Rota para listar todos os usuários
 app.get("/users", (req, res) => {
-    userService.getAllUsers((err, users) => {
+  getAllUsers((err, users) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-    res.json(users.map(user => user.toJSON())); // Retorna os dados no formato JSON
+    res.json(users?.map((user) => user.toJSON())); // Retorna os dados no formato JSON
   });
 });
 
@@ -23,11 +23,11 @@ app.get("/users", (req, res) => {
 app.post("/users", (req, res) => {
   const { name, email } = req.body;
 
-  userService.addUser(name, email, (err, user) => {
+  addUser(name, email, (err, user) => {
     if (err) {
       return res.status(400).json({ error: err.message });
     }
-    res.status(201).json(user.toJSON()); // Retorna o usuário recém-criado
+    res.status(201).json(user?.toJSON()); // Retorna o usuário recém-criado
   });
 });
 

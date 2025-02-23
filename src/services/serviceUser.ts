@@ -1,6 +1,7 @@
-const sqlite3 = require("sqlite3").verbose();
-const User = require("./userModel");  // Importa o modelo User
-const db = new sqlite3.Database("./database/apidev.db", (err) => {
+import sqlite3 from "sqlite3";
+import { User } from "../models/userModel";
+
+const db = new sqlite3.Database("./database.db", (err) => {
   if (err) {
     console.error("Erro ao conectar ao banco de dados:", err.message);
   } else {
@@ -9,8 +10,8 @@ const db = new sqlite3.Database("./database/apidev.db", (err) => {
 });
 
 // Função para listar todos os usuários
-const getAllUsers = (callback) => {
-  db.all("SELECT * FROM users", [], (err, rows) => {
+export const getAllUsers = (callback: (err: Error | null, users: User[] | null) => void) => {
+  db.all("SELECT * FROM users", [], (err, rows: any[]) => {
     if (err) {
       callback(err, null);
       return;
@@ -21,16 +22,20 @@ const getAllUsers = (callback) => {
 };
 
 // Função para adicionar um novo usuário
-const addUser = (name, email, callback) => {
+export const addUser = (
+  name: string,
+  email: string,
+  callback: (err: Error | null, user: User | null) => void
+) => {
   // Valida os dados antes de inserir no banco
   try {
     User.validate({ name, email });
   } catch (err) {
-    return callback(err, null);
+    return callback(err as Error, null);
   }
 
   const query = "INSERT INTO users (name, email) VALUES (?, ?)";
-  db.run(query, [name, email], function (err) {
+  db.run(query, [name, email], function (err: Error | null) {
     if (err) {
       callback(err, null);
       return;
@@ -38,9 +43,4 @@ const addUser = (name, email, callback) => {
     const user = new User(this.lastID, name, email); // Cria uma instância de User
     callback(null, user);
   });
-};
-
-module.exports = {
-  getAllUsers,
-  addUser,
 };
