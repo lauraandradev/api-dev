@@ -11,7 +11,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
 
 // Função para listar todos os usuários
 export const getAllUsers = (callback: (err: Error | null, users: User[] | null) => void) => {
-  db.all("SELECT * FROM users", [], (err, rows: any[]) => {
+  db.all("SELECT * FROM Users", [], (err, rows: any[]) => {
     if (err) {
       callback(err, null);
       return;
