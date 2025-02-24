@@ -1,46 +1,41 @@
-import sqlite3 from "sqlite3";
+import { Pool } from "pg";
 import { User } from "../models/userModel";
 
-const db = new sqlite3.Database("./database.db", (err) => {
-  if (err) {
-    console.error("Erro ao conectar ao banco de dados:", err.message);
-  } else {
-    console.log("Banco de dados conectado com sucesso!");
-  }
+const pool = new Pool({
+  user: "turmy_user",
+  host: "dpg-cutlorggph6c73b43c10-a.oregon-postgres.render.com", // ou o host do seu banco
+  database: "turmy",
+  password: "L2mkjNdwAs1p9Ba0u1YYjsGxGa189TK7",
+  port: 5432, // Porta padrão do PostgreSQL
 });
 
 // Função para listar todos os usuários
-export const getAllUsers = (callback: (err: Error | null, users: User[] | null) => void) => {
-  db.all("SELECT * FROM Users", [], (err, rows: any[]) => {
-    if (err) {
-      callback(err, null);
-      return;
-    }
-    const users = rows.map((row) => new User(row.id, row.name, row.email)); // Mapeia os dados para instâncias de User
+export const getAllUsers = async (callback: (err: Error | null, users: User[] | null) => void) => {
+  try {
+    const result = await pool.query("SELECT * FROM users");
+    const users = result.rows.map((row) => new User(row.id, row.name, row.email));
     callback(null, users);
-  });
+  } catch (err) {
+    callback(err as Error, null);
+  }
 };
 
 // Função para adicionar um novo usuário
-export const addUser = (
+export const addUser = async (
   name: string,
   email: string,
   callback: (err: Error | null, user: User | null) => void
 ) => {
-  // Valida os dados antes de inserir no banco
   try {
     User.validate({ name, email });
-  } catch (err) {
-    return callback(err as Error, null);
-  }
 
-  const query = "INSERT INTO users (name, email) VALUES (?, ?)";
-  db.run(query, [name, email], function (err: Error | null) {
-    if (err) {
-      callback(err, null);
-      return;
-    }
-    const user = new User(this.lastID, name, email); // Cria uma instância de User
+    const query = "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *";
+    const values = [name, email];
+    const result = await pool.query(query, values);
+    
+    const user = new User(result.rows[0].id, result.rows[0].name, result.rows[0].email);
     callback(null, user);
-  });
+  } catch (err) {
+    callback(err as Error, null);
+  }
 };
