@@ -3,11 +3,13 @@ export class User {
     id: number;
     name: string;
     email: string;
+    password: string;
   
-    constructor(id: number, name: string, email: string) {
+    constructor(id: number, name: string, email: string, password: string) {
       this.id = id;
       this.name = name;
       this.email = email;
+      this.password = password;
     }
   
     // Método para representar o usuário em formato JSON
@@ -16,6 +18,7 @@ export class User {
         id: this.id,
         name: this.name,
         email: this.email,
+        password: this.password
       };
     }
   

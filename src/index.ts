@@ -1,37 +1,25 @@
 import express from "express";
-import bodyParser from "body-parser";
-import { addUser, getAllUsers } from "./services/serviceUser";
+import cors from "cors";
+import userRoutes from "./routes/userRoutes";
+import studentRoutes from "./routes/studentRoutes";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware para processar JSON
-app.use(bodyParser.json());
+// Middlewares
+app.use(cors());
+app.use(express.json());
 
-// 🚀 Rota para listar todos os usuários
-app.get("/users", (req, res) => {
-  getAllUsers((err, users) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(users?.map((user) => user.toJSON())); // Retorna os dados no formato JSON
-  });
+// Rotas
+app.use("/users", userRoutes);
+app.use("/students", studentRoutes);
+
+// Middleware global de erro
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({ error: "Ocorreu um erro no servidor." });
 });
 
-// 🚀 Rota para adicionar um novo usuário
-app.post("/users", (req, res) => {
-  const { name, email } = req.body;
-
-  addUser(name, email, (err, user) => {
-    if (err) {
-      return res.status(400).json({ error: err.message });
-    }
-    res.status(201).json(user?.toJSON()); // Retorna o usuário recém-criado
-  });
-});
-
-// Inicia o servidor
 app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+    console.log(`🚀 Servidor rodando na porta ${port}`);
 });
